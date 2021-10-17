@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace CarriesCars.Domain.PricingEngine
 {
+    public interface IDuration {
+        int DurationInMinutes { get; }
+    }
+
     public class UnVerifiedDuration : ValueObject, IDuration
     {
         private record VerifiedDuration(int durationInMinutes) : IDuration
@@ -27,9 +31,15 @@ namespace CarriesCars.Domain.PricingEngine
 
         public IDuration Verify()
         {
-            Guard.Against.NegativeOrZero(durationInMinutes, nameof(durationInMinutes), "Duration should be a positive number in minutes");
+            Guard.Against.Negative(durationInMinutes, nameof(durationInMinutes), "Duration should be a positive number in minutes");
 
             return new VerifiedDuration(durationInMinutes);
+        }        
+    }
+
+    public static class DurationExtensions {
+        public static IDuration Duration(this int minutes) {
+            return new UnVerifiedDuration(minutes).Verify();
         }
     }
 }
