@@ -64,21 +64,21 @@ namespace CarriesCar.Domain.Tests
 
             [Fact]
             public void With_Null_left_operand_throw_exception() {
-                Action operation = () => { var result = (TrustedMoney)null + 200.EUR(); };
+                Action operation = () => { var result = (Money)null + 200.EUR(); };
 
                 Assert.Throws<ArgumentNullException>(operation);
             }
 
             [Fact]
             public void With_Null_right_operand_throw_exception() {
-                Action operation = () => { var result = 200.EUR() + (TrustedMoney)null; };
+                Action operation = () => { var result = 200.EUR() + (Money)null; };
 
                 Assert.Throws<ArgumentNullException>(operation);
             }
 
             [Fact]
             public void With_method_And_Null_right_operand_throw_exception() {
-                Action operation = () => { var result = 200.EUR().Add((TrustedMoney)null); };
+                Action operation = () => { var result = 200.EUR().Add((Money)null); };
 
                 Assert.Throws<ArgumentNullException>(operation);
             }
