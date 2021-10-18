@@ -1,25 +1,25 @@
 ﻿using Ardalis.GuardClauses;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CarriesCars.Domain.PricingEngine {
 
     public record CarRide(ReservationOptions ReservationOptions, RoadRecording RoadRecording);
     public record ReservationOptions(IDuration DurationToReachVehicle, Money PriceToExtendReservation);
-    public record RoadRecording(IDuration Duration, IMileage Mileage, Money PricePerMinute);
+    public record RoadRecording(IDuration Duration, IMileage Mileage, Money PricePerMinute, IMileage MaxMileageWithoutCharges, Money ChargePerKilometer) {
+
+        public int MileageWithExtraCharges => Mileage.MileageInKilometers < MaxMileageWithoutCharges.MileageInKilometers ? 0 : Mileage.MileageInKilometers - MaxMileageWithoutCharges.MileageInKilometers;
+    }
 
     public class CarRideRecorder {
+        private readonly DateTime _reservationStartTime;
         private ReservationOptions _reservationOptions;
         private RoadRecording _roadRecording;
         private DateTime _reachTime;
         private Money _ridePrice;
         private Money _reservationPrice;
+        private Money _chargePrice;
         private Currency _currency;
         private IDuration _freeReservationDuration;
-        private readonly DateTime _reservationStartTime;
 
         private CarRideRecorder(Currency defaultCurrency, DateTime reservationStartTime) {
             _currency = defaultCurrency;
@@ -59,10 +59,19 @@ namespace CarriesCars.Domain.PricingEngine {
             return this;
         }
 
-        public CarRideRecorder WithRoadRecording(IDuration durationInMinutes, int mileage) {
-            _roadRecording = new RoadRecording(durationInMinutes, 
+        public CarRideRecorder WithChargePrice(Money chargePrice) {
+            _chargePrice = chargePrice;
+            _currency = _chargePrice.Currency;
+
+            return this;
+        }
+
+        public CarRideRecorder WithRoadRecording(IDuration durationInMinutes, int mileage, int maxMileageWithoutCharges = Constants.DefaultMaxRideWithoutCharges) {
+            _roadRecording = new RoadRecording(durationInMinutes,
                 new UnVerifiedMileage(mileage).Verify(),
-                _ridePrice ?? new Money(Constants.DefaultRidePricePerMinute, _currency));
+                _ridePrice ?? new Money(Constants.DefaultRidePricePerMinute, _currency),
+                new UnVerifiedMileage(maxMileageWithoutCharges).Verify(),
+                _chargePrice ?? new Money(Constants.DefaultChargePricePerKilometer, _currency));
 
             return this;
         }
@@ -81,6 +90,6 @@ namespace CarriesCars.Domain.PricingEngine {
                     $" and road recording ({_roadRecording.PricePerMinute.Currency})");
 
             return new CarRide(_reservationOptions, _roadRecording);
-        } 
+        }
     }
 }

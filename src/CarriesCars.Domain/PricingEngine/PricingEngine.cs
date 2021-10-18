@@ -2,13 +2,14 @@
     public class PricingEngine : IPricingEngine {
         public Money CalculatePrice(CarRide carRide) {
             var (reservationOptions, roadRecording) = carRide;
-            var ridePrice = Pricing(roadRecording.PricePerMinute, roadRecording.Duration);
-            var reservationExtraPrice = Pricing(reservationOptions.PriceToExtendReservation, reservationOptions.DurationToReachVehicle);
+            var ridePrice = MultiplyAndRound(roadRecording.PricePerMinute, roadRecording.Duration);
+            var reservationExtraPrice = MultiplyAndRound(reservationOptions.PriceToExtendReservation, reservationOptions.DurationToReachVehicle);
+            var mileageChargePrice = roadRecording.ChargePerKilometer.MultiplyAndRound(roadRecording.MileageWithExtraCharges);
 
-            return ridePrice + reservationExtraPrice;
+            return ridePrice + reservationExtraPrice + mileageChargePrice;
         }
 
-        private Money Pricing(Money pricePerMinute, IDuration duration) {
+        private Money MultiplyAndRound(Money pricePerMinute, IDuration duration) {
             return pricePerMinute.MultiplyAndRound(duration.DurationInMinutes);
         }
     }

@@ -29,7 +29,7 @@ namespace CarriesCars.Domain
             return new Money(rounded, Currency);
         }
 
-        
+
         public Money Add(Money right) {
             Guard.Against.Null(right, nameof(right));
             if (! Currency.IsoCode.Equals(right.Currency.IsoCode, StringComparison.InvariantCultureIgnoreCase)) 
